@@ -1,0 +1,570 @@
+# SQL BASIC & EASY
+# BASIC SELECT, ADVANCED SELECT
+
+# Date: 7/8/2024
+
+# Query the list of CITY names starting with vowels (i.e., a, e, i, o, or u) from STATION. 
+# Your result cannot contain duplicates. 
+SELECT DISTINCT CITY 
+FROM STATION
+WHERE CITY LIKE 'a%' OR
+CITY LIKE 'e%' OR
+CITY LIKE 'i%' OR
+CITY LIKE 'o%' OR
+CITY LIKE 'u%'
+
+
+# Query the list of CITY names ending with vowels (a, e, i, o, u) from STATION. 
+# Your result cannot contain duplicates.
+SELECT DISTINCT CITY 
+FROM STATION
+WHERE CITY REGEXP 'a$|e$|i$|o$|u$'
+
+
+
+# Query the list of CITY names from STATION which have vowels (i.e., a, e, i, o, and u) as both their first and last characters. Your result cannot contain duplicates.
+SELECT DISTINCT CITY 
+FROM STATION
+WHERE CITY REGEXP '[aeiou]$' AND CITY REGEXP '^[aeiou]'
+
+# NOTE: WHERE CITY REGEXP '^[aeiou][a-z]+[aeiou]$'  -> This regex does not include city with spaces in the middle i.e East China & East Irvine
+
+
+# Query the list of CITY names from STATION that do not start with vowels. Your result cannot contain duplicates.
+SELECT DISTINCT CITY 
+FROM STATION
+WHERE CITY REGEXP '^[^aeiou]'
+
+
+
+# Query the list of CITY names from STATION that do not end with vowels. Your result cannot contain duplicates.
+SELECT DISTINCT CITY 
+FROM STATION
+WHERE CITY REGEXP '[^aeiou]$'
+
+
+# Query the list of CITY names from STATION that either do not start with vowels or do not end with vowels. Your result cannot contain duplicates.
+SELECT DISTINCT CITY 
+FROM STATION
+WHERE CITY REGEXP '[^aeiou]$' OR CITY REGEXP '^[^aeiou]'
+
+# Query the list of CITY names from STATION that do not start with vowels and do not end with vowels. Your result cannot contain duplicates.
+SELECT DISTINCT CITY 
+FROM STATION
+WHERE CITY REGEXP '[^aeiou]$' AND CITY REGEXP '^[^aeiou]'
+
+
+
+# Date: 8/8/2024
+# Query the Name of any student in STUDENTS who scored higher than 75 Marks. Order your output by the last three characters of each name. If two or more students both have names ending in the same last three characters (i.e.: Bobby, Robby, etc.), secondary sort them by ascending ID.
+
+#NOTE: This one, we order by last 3 characters in the name. Use RIGHT() function. Secondary order is by ID if the name is identical
+
+SELECT NAME
+FROM STUDENTS
+WHERE MARKS > 75
+ORDER BY RIGHT(NAME,3) ASC, ID ASC
+
+
+
+# Write a query that prints a list of employee names (i.e.: the name attribute) from the Employee table in alphabetical order.
+
+SELECT NAME
+FROM EMPLOYEE
+ORDER BY NAME ASC
+
+
+
+# Write a query that prints a list of employee names (i.e.: the name attribute) for employees in Employee having 
+# a salary greater than $2000 per month who have been employees for less than 10 months. Sort your result by ascending employee_id.
+
+select name
+from employee
+where salary > 2000 and months < 10
+order by employee_id
+
+
+
+
+# Date: 10/8/2024
+
+# Write a query identifying the type of each record in the TRIANGLES table using its three side lengths. Output one of the following statements for each record in the table:
+
+# Equilateral: It's a triangle with 3 sides of equal length.
+# Isosceles: It's a triangle with 2 sides of equal length.
+# Scalene: It's a triangle with 3 sides of differing lengths.
+# Not A Triangle: The given values of A, B, and C don't form a triangle.
+
+# IF() is not ideal for this case bcs in SQL, it serves as a ternary function (just to know whether it is True or False), not 
+# a flow control
+select if(a=b && b=c, 'Equilateral', 'Isosceles')
+from triangles
+
+
+select case 
+    WHEN (A = B AND A=C AND B=C) then 'Equilateral' 
+    WHEN ((A = B OR A=C OR B=C) AND ((A + B) > C)) then 'Isosceles' 
+    WHEN ((A <> B AND A<>C AND B<>C) AND ((A + B) > C)) then 'Scalene' 
+    WHEN ((A + B) <= C) then 'Not A Triangle' 
+    END
+from triangles;
+
+# <> means not equal to. 
+# And the ((A+B) > C) is the condition whether it is a triangle or not a triangle.
+
+
+# 10 10 10 - Equilateral
+# 11 11 11 - Equilateral
+# 30 32 30 - Isocsceles
+# 40 40 40 - Equilateral
+# 20 20 21 - Isocsceles
+# 21 21 21 - Equilateral
+# 20 22 21 - Scalene
+# 20 20 40 - Not A Triangle
+# 20 22 21 - Scalene
+# 30 32 41 - Not A Triangle
+# 50 22 51 - Not A Triangle
+# 20 12 61 - Not A Triangle
+# 20 22 50 - Not A Triangle
+# 50 52 51 - Scalene
+# 80 80 80 - Equilateral
+
+
+
+# SQL BASIC & EASY
+# AGGREGATION
+
+# Date: 10/8/2024
+
+# Query a count of the number of cities in CITY having a Population larger than 100,000.
+select count(name)
+from city
+where population > 100000
+
+
+# Query the total population of all cities in CITY where District is California.
+select sum(population)
+from city
+where district = 'California'
+
+
+# Query the average population of all cities in CITY where District is California.
+select avg(population)
+from city
+where district = 'California'
+
+# Query the average population for all cities in CITY, rounded down to the nearest integer.
+select round(avg(population))
+from city
+
+# Query the sum of the populations for all Japanese cities in CITY. The COUNTRYCODE for Japan is JPN.
+select sum(population)
+from city
+where countrycode = 'JPN'
+
+# Query the difference between the maximum and minimum populations in CITY.
+select max(population) - min(population)
+from city
+
+
+# Samantha was tasked with calculating the average monthly salaries for all employees in the EMPLOYEES table, but did not realize her keyboard's 0 key was broken until after completing the calculation. She wants your help finding the difference between her miscalculation (using salaries with any zeros removed), and the actual average salary.
+# Write a query calculating the amount of error (i.e.: actual - miscalculated average monthly salaries), and round it up to the next integer.
+
+# REPLACE(string, from_string, new_string)
+
+# There are 2 parts for this problem.
+# 1 - What the solution calls for is to calculate the amount of error for the salary calculation. Formula is Average Actual - Average Miscalculated
+# 2 - Find the average miscalculated. 
+# 3 - Fix the error. Find the average of the fixed salary
+# 4 -  Then you can find the answer for item 1
+
+
+# SELECT CEIL(AVG(Salary) - AVG(REPLACE(Salary, '0', '')) ) FROM Employees -> Discussion's solution
+
+# This is the original table, without 0 keyboard error
+select * from employees
+
+# 1 Ashley 2340
+# 2 Julia 1198
+# 3 Britney 9009
+# 4 Kristeen 2341
+# 5 Dyana 9990
+# 6 Diana 8011
+# 7 Jenny 2341
+# 8 Christeen 2342
+# 9 Meera 2343
+# 10 Priya 2344
+# 11 Priyanka 2345
+# 12 Paige 2346
+# 13 Jane 2347
+# 14 Belvet 2348
+# 15 Scarlet 2349
+# 16 Salma 9087
+# 17 Amanda 7777
+# 18 Aamina 5500
+# 19 Amina 2570
+
+
+# Ah, okay. I understood the question now. Basically I need to write Sam's wrong query & deduct the correct average from the table. Then, return the result rounded up.
+
+# Sam's miscalculated query
+select replace(salary, '0', '')
+from employees
+
+# 234
+# 1198
+# 99
+# 2341
+# 999
+# 811
+# 2341
+# 2342
+# 2343
+# 2344
+# 2345
+# 2346
+# 2347
+# 2348
+# 2349
+# 987
+# 7777
+# 55
+# 257
+# 27
+
+select avg(replace(salary, '0', ''))
+from employees
+# 1794.5
+
+
+# Correct query for average salary calculation
+select avg(salary) 
+from employees
+# 4046.7500
+
+# The difference of error of the two queries
+select avg(salary) - avg(replace(salary, '0', ''))
+from employees
+# 2252.25
+
+# Round up to nearest integer
+select round(avg(salary) - avg(replace(salary, '0', '')))
+from employees
+# 2252
+
+# Unfortunately, Hackerrank does not accept this. Bcs it did not account the 25 cents difference
+# The CEIL() function returns the smallest integer value that is bigger than or equal to a number. CEILING() is the same function
+select ceil(avg(salary) - avg(replace(salary, '0', '')))
+from employees
+# 2253
+
+# FLOOR() is the opposite. If you put FLOOR(25.75), it will return 25
+
+
+
+# We define an employee's total earnings to be their monthly salary*months worked, and the maximum total earnings to be the maximum total earnings for any employee in the Employee table. 
+# Write a query to find the maximum total earnings for all employees as well as the total number of employees who have maximum total earnings. Then print these values as  space-separated integers.
+
+# Output sample: 69952 1 [Maximum_salary[space][space]Total_employees]
+select  max(months*salary), count(*)
+from employee
+where months*salary = max(select max(months*salary) from employee)
+                       
+#Nested select in WHERE clause
+
+# To count the number of rows in a table, use the COUNT(*) function. This function counts all rows, regardless of whether they contain null values. Counting Non-Null Values in Columns: To count the number of non-null values in a column, use the COUNT(column_name) function.
+
+
+
+# Query the following two values from the STATION table:
+# The sum of all values in LAT_N rounded to a scale of 2 decimal places.
+# The sum of all values in LONG_W rounded to a scale of 2 decimal places.
+select round(sum(lat_n),2), round(sum(long_w),2)
+from station 
+
+
+# Query the sum of Northern Latitudes (LAT_N) from STATION having values greater than 38.7880 and less than 137.2345. Truncate your answer to 4 decimal places.
+select round(sum(lat_n),4)
+from station
+where lat_n between 38.7880 and 137.2345
+
+
+# Query the greatest value of the Northern Latitudes (LAT_N) from STATION that is less than 137.2345. Truncate your answer to 4 decimal places.
+select round(max(lat_n),4)
+from station
+where lat_n < 137.2345
+
+
+# Date: 11/8/2024
+# Query the Western Longitude (LONG_W) for the largest Northern Latitude (LAT_N) in STATION that is less than 137.2345. Round your answer to 4 decimal places.
+select round(long_w,4)
+from station
+where lat_n < 137.2345
+order by lat_n desc
+limit 1
+
+
+# Query the smallest Northern Latitude (LAT_N) from STATION that is greater than 38.7780. Round your answer to 4 decimal places.
+select round(min(lat_n),4)
+from station
+where lat_n > 38.7880
+
+
+# Query the Western Longitude (LONG_W)where the smallest Northern Latitude (LAT_N) in STATION is greater than 38.7780. Round your answer to 4 decimal places.
+select round(long_w,4)
+from station
+where lat_n > 38.7780
+order by lat_n asc
+limit 1
+
+
+
+# SQL BASIC & EASY
+# BASIC JOIN
+
+# INNER JOIN: Returns records that have matching values in both tables
+# LEFT JOIN: Returns all records from the left table, and the matched records from the right table
+# RIGHT JOIN: Returns all records from the right table, and the matched records from the left table
+# CROSS JOIN: Returns all records from both tables
+
+
+# Given the CITY and COUNTRY tables, query the sum of the populations of all cities where the CONTINENT is 'Asia'.
+# Note: CITY.CountryCode and COUNTRY.Code are matching key columns.
+select sum(city.population)
+from city
+inner join country on city.countrycode=country.code
+where continent = 'Asia'
+
+# Given the CITY and COUNTRY tables, query the names of all cities where the CONTINENT is 'Africa'.
+select city.name
+from city
+inner join country on city.countrycode=country.code
+where continent = 'Africa'
+
+# Given the CITY and COUNTRY tables, query the names of all the continents (COUNTRY.Continent) and their respective average city populations (CITY.Population) rounded down to the nearest integer.
+select country.continent, round(avg(city.population))
+from country
+inner join city on city.countrycode=country.code
+group by country.continent
+
+# Asia 693038
+# Europe 175138
+# Oceania 109190
+# South America 147435
+# Africa 274439
+
+# but HR wants floor()
+
+# Asia 693038
+# Europe 175138
+# Oceania 109189
+# South America 147435
+# Africa 274439
+
+# SQL INTERMEDIATE, EASY, BASIC SELECT
+# Query the two cities in STATION with the shortest and longest CITY names, as well as their respective lengths (i.e.: number of characters in the name). If there is more than one smallest or largest city, choose the one that comes first when ordered alphabetically.
+
+SELECT CITY, LENGTH(CITY) AS LENGTH 
+FROM STATION 
+ORDER BY LENGTH(CITY), CITY 
+LIMIT 1;
+# ; is necessary for HR to execute 2 queries
+
+SELECT CITY, LENGTH(CITY) AS LENGTH 
+FROM STATION 
+ORDER BY LENGTH(CITY) DESC, CITY ASC 
+LIMIT 1;
+
+
+#Date: 14/8/2024
+#Remaining SQL Basic questions (3Qs) - Intermediate level
+
+#Question 1: PADS - Sample output
+# Ashely(P)
+# Christeen(P)
+# Jane(A)
+# Jenny(D)
+# Julia(A)
+# Ketty(P)
+# Maria(A)
+# Meera(S)
+# Priya(S)
+# Samantha(D)
+# There are a total of 2 doctors.
+# There are a total of 2 singers.
+# There are a total of 3 actors.
+# There are a total of 3 professors.
+
+# This is how u print
+select 'there are a total of 2 doctors' 
+
+select * from occupations
+# Output:
+# Ashley Professor
+# Samantha Actor
+# Julia Doctor
+# Britney Professor
+# Maria Professor
+# Meera Professor
+# Priya Doctor
+# Priyanka Professor
+# Jennifer Actor
+# Ketty Actor
+# Belvet Professor
+# Naomi Professor
+# Jane Singer
+# Jenny Singer
+# Kristeen Singer
+# Christeen Singer
+# Eve Actor
+# Aamina Doctor
+
+
+select occupation, count(*) as occupation_count
+from occupations
+group by occupation
+order by occupation_count asc
+
+# Output
+# Doctor 3
+# Actor 4
+# Singer 4
+# Professor 7
+
+select name
+case 
+    when occupation = 'Professor' then '(P)'
+    when occupation = 'Actor' then '(A)'
+    when occupation = 'Singer' then '(S)'
+    else '(D)'
+end as occupation_short
+from occupations
+
+
+# Output
+# Ashley (P)
+# Samantha (A)
+# Julia (D)
+# Britney (P)
+# Maria (P)
+# Meera (P)
+# Priya (D)
+# Priyanka (P)
+# Jennifer (A)
+# Ketty (A)
+# Belvet (P)
+# Naomi (P)
+# Jane (S)
+# Jenny (S)
+# Kristeen (S)
+# Christeen (S)
+# Eve (A)
+# Aamina (D)
+
+select 'There are a total of', count(*) as occupation_count, 
+case when occupation = 'Professor' then 'professors.'
+    when occupation = 'Actor' then 'actors.'
+    when occupation = 'Singer' then 'singers.'
+    else 'doctors.'
+end
+from occupations
+group by occupation
+order by occupation_count asc, occupation asc
+
+# Output
+# There are a total of 3 doctors.
+# There are a total of 4 actors.
+# There are a total of 4 singers.
+# There are a total of 7 professors.
+
+#This is correct already, don't know why HR is not accepting
+#Here is one example in the Discussion
+-- DUNG HAM LEFT DE LAY PHAN TU DAU TIEN DEN INDEX(O DAY LA 1) TRONG CHUOI BAT DAU DEM TU BEN TRAI
+SELECT O.NAME + "(" + LEFT(O.OCCUPATION,1 ) +")"
+FROM OCCUPATIONS O
+ORDER BY O.NAME
+
+-- PHAI DUNG HAM CAST DE CHUYEN TOAN BO SANG CHUOI NEU KO SE BI LOI
+SELECT "There are a total of " + CAST(COUNT(O.OCCUPATION) AS NVARCHAR(10)) +" "+LOWER(CAST(O.OCCUPATION AS NVARCHAR(10)))+"s."
+FROM OCCUPATIONS O
+GROUP BY O.OCCUPATION
+ORDER BY COUNT(O.OCCUPATION),O.OCCUPATION
+#Okay, the reason why was the Julia (D), should not have space in between
+
+# New Query to remove the whitespace. Not sure why HR is not accepting this one
+select concat(name, '(', left(occupation, 1), ')') as nameOccupation
+from occupations;
+# Have to order by Name (lil muthafucka). At least I learned about CONCAT and count(*)
+order by name;
+
+select concat('There are a total of ', count(occupation),' ', lower(occupation),'s.')
+from occupations
+group by occupation
+order by count(occupation), occupation
+
+
+# Question 2: Weather Observation 18
+# Calculate Manhattan Distance: P1(x1, y1) & P2(x2, y2) = |(x1-x2)+(y1-y2)|. Answer in 4 decimal place
+select round((max(lat_n)-min(lat_n)) + (max(long_w)-min(long_w)), 4)
+from station
+
+
+# Question 3: Weather Observation 19
+# Calculate Euclidean distance. Answer is rounded to 4 decimal places
+
+# a = min(lat_n)
+# c = min(long_w)
+
+# b = max(lat_n)
+# d = max(long_w)
+
+# Formula is sqrt() of (a-b)^2 + (c-d)^2
+
+select round(sqrt(pow(max(lat_n)-min(lat_n),2)+pow(max(long_w)-min(long_w),2)),4)
+from station
+
+# Date: 15/8/24
+# SQL Basic Certification
+
+# Query for employee ID and Name for employees in HR division and has bonus equals to or more than 5000
+/*
+Enter your query below.
+Please append a semicolon ";" at the end of the query
+*/
+
+select last_quarter_bonus.employee_ID, employee_information.name
+from employee_information 
+inner join last_quarter_bonus on employee_information.employee_ID=last_quarter_bonus.employee_ID
+where division = 'HR' AND bonus >= 5000
+
+
+
+/*
+Enter your query below.
+Please append a semicolon ";" at the end of the query
+*/
+
+select student_information.roll_number, student_information.name
+from student_information
+inner join examination_marks on examination_marks.roll_number=student_information.roll_number
+where (subject_one + subject_two + subject_three) < 100
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
